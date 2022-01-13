@@ -39,7 +39,7 @@ public class Main {
         //extracted(list);
 
         //System.out.println(list);
-        System.out.println(extracted(list));
+        //System.out.println(extracted(list));
     }
 
     public static @NotNull StringBuffer getStringBuffer() throws IOException {
