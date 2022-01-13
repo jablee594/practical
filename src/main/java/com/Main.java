@@ -1,14 +1,12 @@
 package com;
 
-import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,30 +17,61 @@ import java.net.URL;
 import java.util.Scanner;
 
 public class Main {
-
-    private static String date;{}
-
-    private static String codeval;{}
-
-    public static void main(String[] args) throws IOException, XPathExpressionException {
-
+    public static void main(String[] args) throws IOException {
 
         Scanner in = new Scanner(System.in);
 
         System.out.print("Введите дату в формате dd/mm/yyyy: ");
-        date = in.nextLine();
+        String date = in.nextLine();
 
         System.out.print("Введите код валюты: ");
-        codeval = in.nextLine();
+        String codeval = in.nextLine();
 
-        StringBuffer list = getStringBuffer();
-        //extracted(list);
+        StringBuffer list = getList(date);
 
-        //System.out.println(list);
-        //System.out.println(extracted(list));
+        parser(codeval, list);
+
     }
 
-    public static @NotNull StringBuffer getStringBuffer() throws IOException {
+    private static void parser(String codeval, StringBuffer list) {
+
+        NodeList nl = null;
+
+        try {
+            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new InputSource(new StringReader(list.toString())));
+            XPathFactory xPathfactory = XPathFactory.newInstance();
+            XPath xpath = xPathfactory.newXPath();
+
+            XPathExpression cod = xpath.compile("//ValCurs/Valute[CharCode='" + codeval +"']/Value/text()");
+
+            nl = (NodeList) cod.evaluate(doc, XPathConstants.NODESET);
+
+            for (int i = 0; i < nl.getLength(); i++) {
+                Node n = nl.item(i);
+                System.out.println("Value:" + n.getTextContent());
+            }
+            System.out.println();
+
+
+        } catch (XPathExpressionException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (ParserConfigurationException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (SAXException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+    }
+
+    private static StringBuffer getList(String date) throws IOException {
         String url = String.format("http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + date);
 
         URL obj = new URL(url);
@@ -63,37 +92,6 @@ public class Main {
             list.append(inputLine);
         }
         in.close();
-
-        //System.out.println(list.toString());
         return list;
-    }
-
-    private static NodeList extracted(StringBuffer list) throws XPathExpressionException {
-        NodeList nlval = null;
-        NodeList nlcod = null;
-
-        try {
-            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new InputSource(new StringReader(list.toString())));
-            XPathFactory xPathfactory = XPathFactory.newInstance();
-            XPath xpath = xPathfactory.newXPath();
-
-            XPathExpression val = xpath.compile("//ValCurs/Valute/Value/text()");
-            XPathExpression cod = xpath.compile("//ValCurs/Valute/CharCode/text()");
-
-            nlval = (NodeList) val.evaluate(doc, XPathConstants.NODESET);
-            nlcod = (NodeList) cod.evaluate(doc, XPathConstants.NODESET);
-
-
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        }
-        return nlval;
     }
 }
