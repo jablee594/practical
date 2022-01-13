@@ -1,5 +1,6 @@
 package com;
 
+import org.jetbrains.annotations.NotNull;
 import org.xml.sax.InputSource;
 
 import javax.xml.xpath.XPath;
@@ -14,23 +15,32 @@ import java.net.URL;
 import java.util.Scanner;
 
 public class Main {
+
+    private static String date;{}
+
+    private static String codeval;{}
+
     public static void main(String[] args) throws IOException, XPathExpressionException {
-        /*
+
 
         //Запрос данных
         Scanner in = new Scanner(System.in);
 
         System.out.print("Введите дату в формате dd/mm/yyyy: ");
-        String date = in.nextLine();
+        date = in.nextLine();
 
         System.out.print("Введите код валюты: ");
-        String codeval = in.nextLine();
+        codeval = in.nextLine();
 
-        */
+        StringBuffer list = getStringBuffer();
+        extracted(list);
 
-        //Запрос get
+        //System.out.println(list);
+        System.out.println(extracted(list));
+    }
 
-        String url = "http://www.cbr.ru/scripts/XML_daily.asp?date_req=11/01/2022";
+    public static @NotNull StringBuffer getStringBuffer() throws IOException {
+        String url = String.format("http://www.cbr.ru/scripts/XML_daily.asp?date_req=" + date);
 
         URL obj = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) obj.openConnection();
@@ -51,17 +61,20 @@ public class Main {
         }
         in.close();
 
-        System.out.println(list.toString());
+        //System.out.println(list.toString());
+        return list;
+    }
 
-        //Парсер
-
+    private static String extracted(StringBuffer list) throws XPathExpressionException {
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
         InputSource source = new InputSource(new StringReader(list.toString()));
         String result = xpath.evaluate("/ValCurs/Valute/Value", source);
 
-        System.out.println("/n");
-        System.out.println(result);
+        // System.out.println("/n");
+        // System.out.println(result);
+
+        return result;
     }
 }
