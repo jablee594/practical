@@ -1,11 +1,15 @@
 package com;
 
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,7 +27,6 @@ public class Main {
     public static void main(String[] args) throws IOException, XPathExpressionException {
 
 
-        //Запрос данных
         Scanner in = new Scanner(System.in);
 
         System.out.print("Введите дату в формате dd/mm/yyyy: ");
@@ -33,7 +36,7 @@ public class Main {
         codeval = in.nextLine();
 
         StringBuffer list = getStringBuffer();
-        extracted(list);
+        //extracted(list);
 
         //System.out.println(list);
         System.out.println(extracted(list));
@@ -65,16 +68,32 @@ public class Main {
         return list;
     }
 
-    private static String extracted(StringBuffer list) throws XPathExpressionException {
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        XPath xpath = xpathFactory.newXPath();
+    private static NodeList extracted(StringBuffer list) throws XPathExpressionException {
+        NodeList nlval = null;
+        NodeList nlcod = null;
 
-        InputSource source = new InputSource(new StringReader(list.toString()));
-        String result = xpath.evaluate("/ValCurs/Valute/Value", source);
+        try {
+            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(new InputSource(new StringReader(list.toString())));
+            XPathFactory xPathfactory = XPathFactory.newInstance();
+            XPath xpath = xPathfactory.newXPath();
 
-        // System.out.println("/n");
-        // System.out.println(result);
+            XPathExpression val = xpath.compile("//ValCurs/Valute/Value/text()");
+            XPathExpression cod = xpath.compile("//ValCurs/Valute/CharCode/text()");
 
-        return result;
+            nlval = (NodeList) val.evaluate(doc, XPathConstants.NODESET);
+            nlcod = (NodeList) cod.evaluate(doc, XPathConstants.NODESET);
+
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+        return nlval;
     }
 }
